@@ -32,7 +32,10 @@ async def proxy_request(service_base_url: str, request: Request, service_name: s
     except Exception:
         request_body = b''
 
-    path_suffix = request.url.path.lstrip(f"/{service_name}")
+    prefix_to_remove = f"/{service_name}"
+    path_suffix = request.url.path.replace(prefix_to_remove, "", 1)
+    print("---------------------------------------------------------------")
+    print(f"Path suffix for {service_name}: {path_suffix}")
     full_url = f"{service_base_url}{path_suffix}"
 
     print(f"[{request.method}] Gateway routing to: {full_url}")
