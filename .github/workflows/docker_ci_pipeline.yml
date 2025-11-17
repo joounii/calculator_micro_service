@@ -18,6 +18,7 @@ jobs:
       matrix:
         service:
           - gateway
+          - calculator
 
     steps:
       - name: Checkout repository

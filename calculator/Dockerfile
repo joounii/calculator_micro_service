@@ -5,8 +5,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 FROM python:3.11-slim
 ENV PYTHONUNBUFFERED 1
+ENV PORT 8002 # This matches the port used in your uvicorn.run call
 WORKDIR /app
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY . .
-EXPOSE 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+EXPOSE 8002
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8002"]
