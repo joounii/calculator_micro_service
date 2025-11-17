@@ -1,4 +1,3 @@
-// src/theme/index.ts
 import { createTheme, Theme } from "@mui/material/styles";
 
 export const basePalette = {

@@ -1,4 +1,3 @@
-// src/layout/useLocalPageState.ts
 import { useEffect, useState } from "react";
 
 const KEY = "tr.activePage";

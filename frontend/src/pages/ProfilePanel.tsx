@@ -1,4 +1,3 @@
-// src/pages/ProfilePanel.tsx
 import React, { useState } from "react";
 import { Card, CardHeader, CardContent, Container, Paper, Stack, Button } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
