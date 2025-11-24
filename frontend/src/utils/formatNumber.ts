@@ -1,4 +1,3 @@
-// src/utils/formatNumber.ts
 export function formatNumber(
     value: unknown,
     locale: string = "de-CH",

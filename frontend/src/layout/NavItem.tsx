@@ -1,7 +1,6 @@
-// src/layout/NavItem.tsx
 import React from "react";
 import { ListItem, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
-import { useLocalPageState } from "./useLocalPageState";
+import { useNav } from "../context/NavContext";
 
 export interface NavItemProps {
     pageKey: string;
@@ -11,12 +10,17 @@ export interface NavItemProps {
 }
 
 export const NavItem: React.FC<NavItemProps> = ({ pageKey, icon, label, onClick }) => {
-    const { active, setActive } = useLocalPageState();
+    const { active, setActive } = useNav();
     const selected = active === pageKey;
+
+    const handleClick = () => {
+        setActive(pageKey);     // Navigation-Zustand zentral setzen
+        onClick?.();            // Drawer auf Mobile schliessen etc.
+    };
 
     return (
         <ListItem disablePadding>
-            <ListItemButton selected={selected} onClick={() => { setActive(pageKey); onClick && onClick(); }}>
+            <ListItemButton selected={selected} onClick={handleClick}>
                 <ListItemIcon>{icon}</ListItemIcon>
                 <ListItemText primary={label} />
             </ListItemButton>

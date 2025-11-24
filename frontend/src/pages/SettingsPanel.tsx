@@ -1,4 +1,3 @@
-// src/pages/SettingsPanel.tsx
 import React from "react";
 import {
     Card, CardHeader, CardContent, Container, Grid, TextField,

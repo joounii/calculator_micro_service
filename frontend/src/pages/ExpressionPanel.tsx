@@ -1,11 +1,9 @@
-import React, { Fragment, useState } from "react";
-import {
-    Card, CardHeader, CardContent, Container, Box, Tabs, Tab,
-    TextField, Stack, Button, Chip
-} from "@mui/material";
+import React, { useState } from "react";
+import { Card, CardHeader, CardContent, Container, Box, Tabs, Tab, TextField, Stack, Button, Chip } from "@mui/material";
 import CodeIcon from "@mui/icons-material/Code";
-import {useServices} from "@/services/ServicesContext";
 import { formatNumber } from "../utils/formatNumber";
+import type { ExprEvalResp } from "../services/services";
+import {useServices} from "@/services/ServicesContext";
 
 export const ExpressionPanel: React.FC = () => {
     const { services } = useServices();
@@ -15,11 +13,12 @@ export const ExpressionPanel: React.FC = () => {
 
     async function runEval() {
         try {
-            const data = await services.expr.eval(expr);
+            const data: ExprEvalResp = await services.expr.eval(expr);
             setRes(data.result);
             await services.history.add({ kind: "expr", input: { expr }, result: data.result });
-        } catch (e: any) {
-            alert(e.message || String(e));
+        } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : String(e);
+            alert(msg);
         }
     }
 

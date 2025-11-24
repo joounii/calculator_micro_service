@@ -1,4 +1,3 @@
-// src/layout/AppShell.tsx
 import React from "react";
 import {
     AppBar, Toolbar, Typography, CssBaseline, Drawer, Divider,
@@ -30,11 +29,6 @@ export const AppShell: React.FC<AppShellProps> = ({ children, onMenuToggle, mobi
             <List>
                 {pages.map(p => (<NavItem key={p.key} pageKey={p.key} icon={p.icon} label={p.label} onClick={onMenuToggle}/>))}
             </List>
-            <Box px={2} py={1}>
-                <Typography variant="caption" color="text.secondary">
-                    {cfg.tips ? "Tipp: Shift+Enter = neue Zeile" : ""}
-                </Typography>
-            </Box>
         </div>
     );
 
