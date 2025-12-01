@@ -20,11 +20,18 @@ export const BasicOpsPanel: React.FC = () => {
     async function calc() {
         setLoading(true);
         try {
-            const data = await services.basic.calc(Number(a), Number(b), op);
-            setRes(data.result);
-            await services.history.add({ kind: "basic", input: { a, b, op }, result: data.result });
-        } catch (e: any) {
-            setSnack(String(e.message || e));
+            if (op === "percent") {
+                const local = (Number(a) * Number(b)) / 100;
+                setRes(local);
+                await services.history.add?.({ kind: "basic", input: { a, b, op }, result: local });
+            } else {
+                const data = await services.basic.calc(Number(a), Number(b), op);
+                setRes(data.result);
+                await services.history.add?.({ kind: "basic", input: { a, b, op }, result: data.result });
+            }
+        } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : String(e);
+            setSnack(msg);
         } finally {
             setLoading(false);
         }

@@ -19,7 +19,7 @@ export class ApiClient {
     private token: string;
     private mock: boolean;
 
-    constructor({ baseUrl = "", token = "", mock = true }: ApiClientOptions = {}) {
+    constructor({ baseUrl = "http://localhost:8000", token = "", mock = false }: ApiClientOptions = {}) {
         this.baseUrl = baseUrl;
         this.token = token;
         this.mock = mock;
@@ -329,4 +329,7 @@ function unitConvert(value: number, from: string, to: string): number {
     if (from === "const" && (to in consts)) return consts[to] * v;
 
     throw new Error(`Konvertierung nicht unterstützt (${from} → ${to})`);
+
+
+
 }
