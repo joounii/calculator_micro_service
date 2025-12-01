@@ -1,107 +1,171 @@
-import os
-import json
-from http import HTTPStatus
-from fastapi import FastAPI, HTTPException, Request, Response
-import httpx
 
-SERVICE_MAP = {
-    "login": os.environ.get("LOGIN_SERVICE_URL", "http://localhost:8001"),
+import os
+from http import HTTPStatus
+from typing import Dict, Optional
+
+import httpx
+from fastapi import FastAPI, HTTPException, Request, Response
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+# Static fallback URLs (e.g. for local development or when the registry is down)
+STATIC_SERVICE_MAP: Dict[str, str] = {
+    "auth": os.environ.get("AUTH_SERVICE_URL", "http://localhost:8001"),
     "calculate": os.environ.get("CALCULATOR_SERVICE_URL", "http://localhost:8002"),
     "history": os.environ.get("HISTORY_SERVICE_URL", "http://localhost:8003"),
 }
 
+SERVICE_REGISTRY_URL = os.environ.get("SERVICE_REGISTRY_URL", "http://localhost:7000")
+
+ALLOWED_SERVICES = set(STATIC_SERVICE_MAP.keys())
+
 app = FastAPI(
-    title="Unified Calculator Microservice Gateway",
-    description="Routes requests to Login, Calculator, and History services, and handles auth proxying.",
-    version="2.0.0"
+    title="Calculator API Gateway",
+    description=(
+        "Public entry point for the calculator system. "
+        "Forwards requests to the Auth, Calculator and History microservices. "
+        "Uses a lightweight service registry when available."
+    ),
+    version="1.0.0",
 )
 
-http_client = httpx.AsyncClient(timeout=10.0)
 
-async def proxy_request(service_base_url: str, request: Request, service_name: str):
-    """Handles forwarding the incoming request to the target microservice."""
-    
-    proxy_headers = dict(request.headers)
-    
-    proxy_headers.pop('host', None)
-    proxy_headers.pop('connection', None)
-    
-    query_params = dict(request.query_params)
+# ---------------------------------------------------------------------------
+# Helper functions
+# ---------------------------------------------------------------------------
+
+async def _lookup_in_registry(service_name: str) -> Optional[str]:
+    """Try to resolve the base URL for *service_name* via the registry.
+
+    If the registry is not reachable or the service is unknown, ``None`` is returned.
+    """
+    if not SERVICE_REGISTRY_URL:
+        return None
+
+    url = SERVICE_REGISTRY_URL.rstrip("/") + f"/services/{service_name}"
     try:
-        request_body = await request.body()
+        async with httpx.AsyncClient(timeout=1.0) as client:
+            response = await client.get(url)
+        if response.status_code != HTTPStatus.OK:
+            return None
+        payload = response.json()
+        # we expect either { "url": "http://..." } or { "name": "...", "url": "http://..." }
+        if isinstance(payload, dict):
+            service_url = payload.get("url")
+            if isinstance(service_url, str):
+                return service_url
     except Exception:
-        request_body = b''
+        # Registry not available → caller will fall back to STATIC_SERVICE_MAP
+        return None
 
-    prefix_to_remove = f"/{service_name}"
-    path_suffix = request.url.path.replace(prefix_to_remove, "", 1)
-    print("---------------------------------------------------------------")
-    print(f"Path suffix for {service_name}: {path_suffix}")
-    full_url = f"{service_base_url}{path_suffix}"
+    return None
 
-    print(f"[{request.method}] Gateway routing to: {full_url}")
 
-    try:
-        response = await http_client.request(
-            request.method,
-            full_url,
-            headers=proxy_headers,
-            params=query_params,
-            content=request_body,
-        )
-        
-        response_headers = dict(response.headers)
-        
-        return Response(
-            content=response.content,
-            status_code=response.status_code,
-            headers=response_headers,
-            media_type=response.headers.get("Content-Type", "application/json")
-        )
+async def get_service_base_url(service_name: str) -> str:
+    """Resolve the base URL for *service_name*.
 
-    except httpx.ConnectError:
-        raise HTTPException(
-            status_code=HTTPStatus.SERVICE_UNAVAILABLE,
-            detail=f"Cannot connect to the {service_name.capitalize()} service at {service_base_url}. Is it running?"
-        )
-    except httpx.HTTPError as e:
-        print(f"HTTP Error during forwarding: {e}")
-        raise HTTPException(
-            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
-            detail=f"Internal error communicating with {service_name} service."
-        )
-
-@app.api_route("/{service_name}/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
-async def catch_all_router(service_name: str, path: str, request: Request):
+    1. Try the registry.
+    2. Fall back to the static configuration.
     """
-    A unified router that matches the service name prefix and proxies the request.
-    
-    - Matches paths like: /login/verify, /calculate/add, /history/list
-    """
-    
-    service_name = service_name.lower()
-    if service_name not in SERVICE_MAP:
+    if service_name not in ALLOWED_SERVICES:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail=f"Service '{service_name}' not found. Available services: {', '.join(SERVICE_MAP.keys())}"
+            detail=f"Unknown service '{service_name}'.",
         )
 
-    base_url = SERVICE_MAP[service_name]
-    
-    auth_header = request.headers.get("Authorization")
+    # 1) Try registry
+    registry_url = await _lookup_in_registry(service_name)
+    if registry_url:
+        return registry_url.rstrip("/")
 
-    if service_name in ["calculate", "history"] and not auth_header:
-        pass
-    return await proxy_request(base_url, request, service_name)
+    # 2) Fallback to static map
+    base_url = STATIC_SERVICE_MAP.get(service_name)
+    if not base_url:
+        raise HTTPException(
+            status_code=HTTPStatus.SERVICE_UNAVAILABLE,
+            detail=f"No base URL configured for service '{service_name}'.",
+        )
+
+    return base_url.rstrip("/")
+
+
+async def proxy_request(service_name: str, request: Request, path: str) -> Response:
+    """Generic reverse proxy.
+
+    Forwards the incoming *request* to the resolved *service_name* and *path*.
+    """
+    base_url = await get_service_base_url(service_name)
+    target_url = f"{base_url}/{path}".rstrip("/")
+
+    # Clone incoming request
+    method = request.method
+    query_params = dict(request.query_params)
+    headers = dict(request.headers)
+    # Host header should be removed so the downstream service can set its own
+    headers.pop("host", None)
+
+    body = await request.body()
+
+    async with httpx.AsyncClient(follow_redirects=False) as client:
+        upstream_response = await client.request(
+            method=method,
+            url=target_url,
+            params=query_params,
+            headers=headers,
+            content=body,
+        )
+
+    # Build response to caller
+    # Copy headers but drop hop-by-hop headers that can cause issues
+    excluded_headers = {"content-length", "transfer-encoding", "connection", "keep-alive"}
+    response_headers = {
+        k: v
+        for k, v in upstream_response.headers.items()
+        if k.lower() not in excluded_headers
+    }
+
+    return Response(
+        content=upstream_response.content,
+        status_code=upstream_response.status_code,
+        headers=response_headers,
+        media_type=upstream_response.headers.get("content-type"),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
+@app.api_route(
+    "/{service_name}/{path:path}",
+    methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+)
+async def gateway_proxy(service_name: str, path: str, request: Request) -> Response:
+    """Entry point for all proxied service calls.
+
+    Example: ``/calculate/add`` → forwards to the Calculator service.
+    """
+    return await proxy_request(service_name, request, path or "")
 
 
 @app.get("/")
-async def welcome():
-    """Simple health check endpoint for the Gateway."""
+async def root() -> Dict[str, object]:
+    """Simple health check and configuration overview."""
     return {
         "message": "Calculator API Gateway is running.",
-        "services": SERVICE_MAP
+        "allowedServices": sorted(ALLOWED_SERVICES),
+        "staticServiceMap": STATIC_SERVICE_MAP,
+        "serviceRegistryUrl": SERVICE_REGISTRY_URL,
     }
-    
+
+
+# ---------------------------------------------------------------------------
+# Local development entry point
+# ---------------------------------------------------------------------------
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
