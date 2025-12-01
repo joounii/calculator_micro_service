@@ -19,6 +19,8 @@ jobs:
         service:
           - gateway
           - calculator
+          - history
+          - registry
 
     steps:
       - name: Checkout repository
