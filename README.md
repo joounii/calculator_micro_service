@@ -1,9 +1,11 @@
 # Services: 
 
 ## gateway (port 8000)
+Start with ``python main.py``
 ## auth (port 8001)
 
 ## Calculator (port 8002)
+Start with ``python main.py``
 ### Endpoints
 #### Add
 Url: localhost:8000/calculate/add
