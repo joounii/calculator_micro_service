@@ -16,6 +16,16 @@ app = FastAPI(
     version="2.0.0"
 )
 
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 http_client = httpx.AsyncClient(timeout=10.0)
 
 async def proxy_request(service_base_url: str, request: Request, service_name: str):

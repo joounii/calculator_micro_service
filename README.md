@@ -1,5 +1,8 @@
 # Services: 
 
+## Frontend (port 3000)
+Start with ``npm run dev``
+
 ## gateway (port 8000)
 Start with ``python main.py``
 ## auth (port 8001)

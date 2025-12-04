@@ -46,7 +46,7 @@ function useLocalStorage<T>(key: string, initialValue: T) {
 export const ServicesProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
     const [baseUrl, setBaseUrl] = useLocalStorage("tr.baseUrl", "http://localhost:8000");
     const [token,   setToken]   = useLocalStorage<string>("tr.token",   "");
-    const [mock,    setMock]    = useLocalStorage<boolean>("tr.mock",   true);
+    const [mock,    setMock]    = useLocalStorage<boolean>("tr.mock",   false);
     const [locale,  setLocale]  = useLocalStorage<string>("tr.locale",  "de-CH");
     const [tips,    setTips]    = useLocalStorage<boolean>("tr.tips",   true);
 

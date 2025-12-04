@@ -58,15 +58,11 @@ function useLocalStorage<T>(key: string, initialValue: T) {
 type PageDef = { key: string; label: string; icon: React.ReactNode; component: React.FC };
 
 export const PAGES: PageDef[] = [
-    { key: "basic",    label: "Grundrechnen", icon: <CalculateIcon />,     component: BasicOpsPanel },
-    { key: "advanced", label: "Erweitert",    icon: <FunctionsIcon />,     component: AdvancedMathPanel },
-    { key: "convert",  label: "Einheiten",    icon: <SwapHorizIcon />,     component: UnitsPanel },
-    { key: "expr",     label: "Ausdruck",     icon: <CodeIcon />,          component: ExpressionPanel },
-    { key: "history",  label: "Verlauf",      icon: <HistoryIcon />,       component: HistoryPanel },
-    { key: "ai",       label: "AI-Solver",    icon: <PsychologyIcon />,    component: AISolverPanel },
-    { key: "auth",     label: "Login",        icon: <LockOpenIcon />,      component: AuthPanel },
-    { key: "settings", label: "Settings",     icon: <SettingsIcon />,      component: SettingsPanel },
-    { key: "profile",  label: "Profil",       icon: <AccountCircleIcon />, component: ProfilePanel },
+    { key: "basic", label: "Grundrechnen", icon: <CalculateIcon />, component: BasicOpsPanel },
+    { key: "advanced", label: "Erweitert", icon: <FunctionsIcon />, component: AdvancedMathPanel },
+    { key: "history", label: "Verlauf", icon: <HistoryIcon />, component: HistoryPanel },
+    { key: "auth", label: "Login", icon: <LockOpenIcon />, component: AuthPanel },
+    { key: "profile", label: "Profil", icon: <AccountCircleIcon />, component: ProfilePanel },
 ];
 
 const ActivePageRenderer: React.FC = () => {
