@@ -105,11 +105,17 @@ The gateway routes requests to the appropriate microservice based on the path pr
 ## Known Issues
 
 ### History Service
-> The History Service is currently **unfinished and not fully working**.
-> -   I wasn't able to finish the correct frontend implementation of the history service in time
+The History Service is currently **unfinished and not fully working**.
+I wasn't able to finish the correct frontend implementation of the history service in time
+
+### Pipeline
+
+All the jobs for the services work except for the frontend. The frontend currently is not structured correctly and because of that can't be built. That leads to the github action failing. It's 23:00 and i want too sleep so i won't fix it now because i would have to restrucutre the entire frontend for it to work.
 
 
 
 ## Docker hub repositorys:
 - https://hub.docker.com/r/joounii/gateway
+- https://hub.docker.com/r/joounii/history
+- https://hub.docker.com/r/joounii/auth
 - https://hub.docker.com/r/joounii/calculator
