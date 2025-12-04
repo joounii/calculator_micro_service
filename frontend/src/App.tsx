@@ -22,7 +22,6 @@ import { AdvancedMathPanel } from "@/pages/AdvancedMathPanel";
 import { UnitsPanel } from "@/pages/UnitsPanel";
 import { ExpressionPanel } from "@/pages/ExpressionPanel";
 import { HistoryPanel } from "@/pages/HistoryPanel";
-import { AISolverPanel } from "@/pages/AISolverPanel";
 import { SettingsPanel } from "@/pages/SettingsPanel";
 import { ProfilePanel } from "@/pages/ProfilePanel";
 import { AuthPanel } from "@/pages/AuthPanel";
