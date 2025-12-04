@@ -1,26 +1,29 @@
 import React, { useState } from "react";
 import { Card, CardHeader, CardContent, Container, Paper, Stack, Button } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import {useServices} from "@/services/ServicesContext";
+import { useServices } from "@/services/ServicesContext";
 
 export const ProfilePanel: React.FC = () => {
-    const { services } = useServices();
-    const [data, setData] = useState<any>(null);
+    const { cfg } = useServices();
 
-    async function load() {
-        try { const d = await services.user.me(); setData(d); }
-        catch (e) { alert(String(e)); }
-    }
+    // Decode token simply for display (in real app, use a library or /me endpoint)
+    const userEmail = cfg.token ? "Eingeloggt" : "Nicht eingeloggt";
 
     return (
         <Container maxWidth="sm">
             <Card variant="outlined">
-                <CardHeader title="Profil" subheader="Abruf über /me und /me/settings" />
+                <CardHeader title="Profil" />
                 <CardContent>
                     <Stack spacing={2}>
-                        <Button variant="contained" onClick={load} startIcon={<AccountCircleIcon/>}>Profil laden</Button>
-                        <Paper variant="outlined" sx={{ p: 2, fontFamily: "monospace", whiteSpace: "pre-wrap" }}>
-                            {JSON.stringify(data, null, 2) || "—"}
+                        <Paper variant="outlined" sx={{ p: 2 }}>
+                            {cfg.user ? (
+                                <>
+                                    <div><strong>Name:</strong> {cfg.user.name || "—"}</div>
+                                    <div><strong>E-Mail:</strong> {cfg.user.email}</div>
+                                </>
+                            ) : (
+                                <div>Bitte einloggen.</div>
+                            )}
                         </Paper>
                     </Stack>
                 </CardContent>

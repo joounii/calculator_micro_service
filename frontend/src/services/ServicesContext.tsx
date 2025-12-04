@@ -3,14 +3,21 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { ServiceRegistry } from "../services/ServiceRegistry";
 
+export interface UserInfo {
+    id: string;
+    email: string;
+    name?: string;
+}
+
 export interface ServicesContextValue {
     services: ServiceRegistry;
     cfg: {
         baseUrl: string; setBaseUrl: (v: string) => void;
-        token: string;   setToken:   (v: string) => void;
-        mock: boolean;   setMock:    (v: boolean) => void;
-        locale: string;  setLocale:  (v: string) => void;
-        tips: boolean;   setTips:    (v: boolean) => void;
+        token: string; setToken: (v: string) => void;
+        user: UserInfo | null; setUser: (v: UserInfo | null) => void;
+        mock: boolean; setMock: (v: boolean) => void;
+        locale: string; setLocale: (v: string) => void;
+        tips: boolean; setTips: (v: boolean) => void;
     };
 }
 const ServicesContext = createContext<ServicesContextValue | null>(null);
@@ -30,14 +37,14 @@ function useLocalStorage<T>(key: string, initialValue: T) {
         try {
             const raw = window.localStorage.getItem(key);
             setVal(raw ? (JSON.parse(raw) as T) : initialValue);
-        } catch {}
+        } catch { }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [key]); // nur auf Key reagieren
 
     // Änderungen persistieren
     useEffect(() => {
         if (typeof window === "undefined") return;
-        try { window.localStorage.setItem(key, JSON.stringify(val)); } catch {}
+        try { window.localStorage.setItem(key, JSON.stringify(val)); } catch { }
     }, [key, val]);
 
     return [val, setVal] as const;
@@ -45,10 +52,11 @@ function useLocalStorage<T>(key: string, initialValue: T) {
 
 export const ServicesProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
     const [baseUrl, setBaseUrl] = useLocalStorage("tr.baseUrl", "http://localhost:8000");
-    const [token,   setToken]   = useLocalStorage<string>("tr.token",   "");
-    const [mock,    setMock]    = useLocalStorage<boolean>("tr.mock",   false);
-    const [locale,  setLocale]  = useLocalStorage<string>("tr.locale",  "de-CH");
-    const [tips,    setTips]    = useLocalStorage<boolean>("tr.tips",   true);
+    const [token, setToken] = useLocalStorage<string>("tr.token", "");
+    const [user, setUser] = useLocalStorage<UserInfo | null>("tr.user", null);
+    const [mock, setMock] = useLocalStorage<boolean>("tr.mock", false);
+    const [locale, setLocale] = useLocalStorage<string>("tr.locale", "de-CH");
+    const [tips, setTips] = useLocalStorage<boolean>("tr.tips", true);
 
     // Stabile Registry-Instanz
     const [services] = useState(() => new ServiceRegistry());
@@ -57,8 +65,8 @@ export const ServicesProvider: React.FC<React.PropsWithChildren> = ({ children }
     useEffect(() => { services.applyConfig({ baseUrl, token, mock }); }, [services, baseUrl, token, mock]);
 
     const cfg = useMemo(() => ({
-        baseUrl, setBaseUrl, token, setToken, mock, setMock, locale, setLocale, tips, setTips
-    }), [baseUrl, token, mock, locale, tips]);
+        baseUrl, setBaseUrl, token, setToken, user, setUser, mock, setMock, locale, setLocale, tips, setTips
+    }), [baseUrl, token, user, mock, locale, tips]);
 
     const value = useMemo<ServicesContextValue>(() => ({ services, cfg }), [services, cfg]);
 

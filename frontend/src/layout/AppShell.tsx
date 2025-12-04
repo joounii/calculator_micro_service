@@ -5,7 +5,7 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { NavItem } from "./NavItem";
-import {useServices} from "@/services/ServicesContext";
+import { useServices } from "@/services/ServicesContext";
 
 const DRAWER_WIDTH = 280;
 
@@ -27,7 +27,13 @@ export const AppShell: React.FC<AppShellProps> = ({ children, onMenuToggle, mobi
                 <Chip label={cfg.mock ? "Mock-Modus" : "Live-API"} color={cfg.mock ? "default" : "primary"} size="small" />
             </Box>
             <List>
-                {pages.map(p => (<NavItem key={p.key} pageKey={p.key} icon={p.icon} label={p.label} onClick={onMenuToggle}/>))}
+                {pages.map(p => {
+                    if (p.key === "history" && !cfg.token) return null;
+                    if (p.key === "auth") {
+                        return <NavItem key={p.key} pageKey={p.key} icon={p.icon} label={cfg.token ? "Logout" : "Login"} onClick={onMenuToggle} />;
+                    }
+                    return <NavItem key={p.key} pageKey={p.key} icon={p.icon} label={p.label} onClick={onMenuToggle} />;
+                })}
             </List>
         </div>
     );
@@ -48,8 +54,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children, onMenuToggle, mobi
 
             {/* Mobile Drawer */}
             <Drawer variant="temporary" open={mobileOpen} onClose={onMenuToggle}
-                    ModalProps={{ keepMounted: true }}
-                    sx={{ display: { xs: 'block', sm: 'none' }, '& .MuiDrawer-paper': { boxSizing: 'border-box', width: DRAWER_WIDTH } }}>
+                ModalProps={{ keepMounted: true }}
+                sx={{ display: { xs: 'block', sm: 'none' }, '& .MuiDrawer-paper': { boxSizing: 'border-box', width: DRAWER_WIDTH } }}>
                 {drawer}
             </Drawer>
 
