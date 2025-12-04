@@ -19,10 +19,8 @@ import { AppShell } from "@/layout/AppShell";
 
 import { BasicOpsPanel } from "@/pages/BasicOpsPanel";
 import { AdvancedMathPanel } from "@/pages/AdvancedMathPanel";
-import { UnitsPanel } from "@/pages/UnitsPanel";
 import { ExpressionPanel } from "@/pages/ExpressionPanel";
 import { HistoryPanel } from "@/pages/HistoryPanel";
-import { SettingsPanel } from "@/pages/SettingsPanel";
 import { ProfilePanel } from "@/pages/ProfilePanel";
 import { AuthPanel } from "@/pages/AuthPanel";
 import { ServicesProvider } from "./services/ServicesContext";
