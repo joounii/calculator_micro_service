@@ -17,10 +17,12 @@ jobs:
       fail-fast: false
       matrix:
         service:
-          - gateway
+          - auth
           - calculator
+          - frontend
+          - gateway
           - history
-          - registry
+          
 
     steps:
       - name: Checkout repository

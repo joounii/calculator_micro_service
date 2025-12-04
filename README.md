@@ -105,7 +105,6 @@ The gateway routes requests to the appropriate microservice based on the path pr
 ## Known Issues
 
 ### History Service
-> [!WARNING]\
 > The History Service is currently **unfinished and not fully working**.
 > -   I wasn't able to finish the correct frontend implementation of the history service in time
 
