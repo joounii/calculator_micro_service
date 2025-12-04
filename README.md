@@ -1,62 +1,116 @@
-# Services: 
+# Calculator Microservice
 
-## Frontend (port 3000)
-Start with ``npm run dev``
+This document provides an overview of the Calculator Microservice application, including startup instructions, service details, and known issues.
 
-## gateway (port 8000)
-Start with ``python main.py``
-## auth (port 8001)
+## Overview
 
-## Calculator (port 8002)
-Start with ``python main.py``
-### Endpoints
-#### Add
-Url: localhost:8000/calculate/add
-Body: 
-```json
-{
-    "num1": 2,
-    "num2": 4
-}
+The application is a microservice-based calculator composed of the following components:
+-   **Gateway**: Unified entry point for all requests.
+-   **Auth Service**: Handles user authentication (login/register).
+-   **Calculator Service**: Performs arithmetic operations.
+-   **History Service**: Stores calculation history.
+-   **Frontend**: A Next.js web application.
+
+## Startup Instructions
+
+To run the entire application, you need to start each service and the frontend in separate terminal instances.
+
+### 1. Start the Gateway
+```bash
+cd gateway
+python main.py
 ```
-#### subtract
-Url: localhost:8000/calculate/subtract
-Body: 
-```json
-{
-    "num1": 10,
-    "num2": 3
-}
+*Runs on: `http://localhost:8000`*
+
+### 2. Start the Auth Service
+```bash
+cd auth
+python main.py
 ```
-#### Multiply
-Url: localhost:8000/calculate/multiply
-Body: 
-```json
-{
-    "num1": 5,
-    "num2": 4
-}
+*Runs on: `http://localhost:8001`*
+
+### 3. Start the Calculator Service
+```bash
+cd calculator
+python main.py
 ```
-#### Divide
-Url: localhost:8000/calculate/divide
-Body: 
-```json
-{
-    "num1": 10,
-    "num2": 5
-}
+*Runs on: `http://localhost:8002`*
+
+### 4. Start the History Service
+```bash
+cd history
+python main.py
 ```
-#### Root
-Url: localhost:8000/calculate/root
-Body: 
-```json
-{
-    "num1": 16,
-    "num2": 2
-}
+*Runs on: `http://localhost:8003`*
+
+### 5. Start the Frontend
+```bash
+cd frontend
+npm run dev
 ```
-## history (port 8003)
+*Runs on: `http://localhost:3000`*
+
+---
+
+## Services & Routes
+
+### Gateway Service
+**Base URL:** `http://localhost:8000`
+The gateway routes requests to the appropriate microservice based on the path prefix.
+
+| Route | Method | Target Service | Description |
+| :--- | :--- | :--- | :--- |
+| `/login/*` | Any | Auth Service | Proxies to Auth Service |
+| `/calculate/*` | Any | Calculator Service | Proxies to Calculator Service |
+| `/history/*` | Any | History Service | Proxies to History Service |
+| `/` | GET | Self | Health check |
+
+### Auth Service
+**Base URL:** `http://localhost:8001` (Accessed via Gateway at `/login`)
+
+| Route | Method | Description |
+| :--- | :--- | :--- |
+| `/verify` | POST | User login. Returns a token. |
+| `/register` | POST | User registration. |
+| `/` | GET | Health check. |
+
+*Default Admin User:*
+-   Email: `admin@example.com`
+-   Password: `password123`
+
+### Calculator Service
+**Base URL:** `http://localhost:8002` (Accessed via Gateway at `/calculate`)
+
+| Route | Method | Description |
+| :--- | :--- | :--- |
+| `/add` | POST | Addition (`num1 + num2`) |
+| `/subtract` | POST | Subtraction (`num1 - num2`) |
+| `/multiply` | POST | Multiplication (`num1 * num2`) |
+| `/divide` | POST | Division (`num1 / num2`) |
+| `/root` | POST | N-th Root (`num1` root `num2`) |
+| `/` | GET | Health check. |
+
+### History Service
+**Base URL:** `http://localhost:8003` (Accessed via Gateway at `/history`)
+
+| Route | Method | Description |
+| :--- | :--- | :--- |
+| `/history` | POST | Add a new history entry. |
+| `/history` | GET | List recent history entries. |
+| `/history` | DELETE | Clear all history. |
+| `/` | GET | Health check. |
+
+---
+
+## Known Issues
+
+### History Service
+> [!WARNING]\
+> The History Service is currently **unfinished and not fully working**.
+> -   I wasn't able to finish the correct frontend implementation of the history service in time
+
+
 
 ## Docker hub repositorys:
-https://hub.docker.com/r/joounii/gateway
-https://hub.docker.com/r/joounii/calculator
+- https://hub.docker.com/r/joounii/gateway
+- https://hub.docker.com/r/joounii/calculator
