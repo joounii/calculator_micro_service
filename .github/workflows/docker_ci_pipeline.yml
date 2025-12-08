@@ -19,7 +19,6 @@ jobs:
         service:
           - auth
           - calculator
-          - frontend
           - gateway
           - history
           
