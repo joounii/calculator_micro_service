@@ -66,6 +66,9 @@ export const ServicesProvider: React.FC<React.PropsWithChildren> = ({ children }
 
     const cfg = useMemo(() => ({
         baseUrl, setBaseUrl, token, setToken, user, setUser, mock, setMock, locale, setLocale, tips, setTips
+    // Disabling the linter here because all setter functions (setBaseUrl, setToken, etc.)
+    // are guaranteed by React to have stable identities and never change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }), [baseUrl, token, user, mock, locale, tips]);
 
     const value = useMemo<ServicesContextValue>(() => ({ services, cfg }), [services, cfg]);

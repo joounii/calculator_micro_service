@@ -1,5 +1,5 @@
 // src/pages/HistoryPanel.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Card, CardHeader, CardContent, Container, Box, Button, CircularProgress, Chip, Alert } from "@mui/material";
 import DownloadIcon from "@mui/icons-material/Download";
 import type { HistoryItem, HistoryListResp } from "../services/services";
@@ -14,7 +14,7 @@ export const HistoryPanel: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string>("");
 
-    async function load() {
+    const load = useCallback(async function () {
         setLoading(true);
         setError("");
         try {
@@ -26,9 +26,11 @@ export const HistoryPanel: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }
+    }, [services]);
 
-    useEffect(() => { void load(); }, []);
+    useEffect(() => { 
+        void load(); 
+    }, [load]);
 
     function dlCSV() {
         const header = ["ts", "kind", "input", "result"];
